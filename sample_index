@@ -1,0 +1,53 @@
+
+<?php 
+
+include 'debut.php';
+
+?>
+
+	
+
+	
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hey</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header, footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1em 0;
+        }
+        main {
+            padding: 2em;
+        }
+    </style>
+	<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel="shortcut icon" href="/favicon.ico" />
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+	<meta name="apple-mobile-web-app-title" content="MTS" />
+	<link rel="manifest" href="/site.webmanifest" />
+</head>
+<body>
+    <header>
+        <h1></h1>
+    </header>
+    <main>
+        <h2></h2>
+        <p></p>
+    </main>
+    <footer>
+        <p><? echo date("Y"); ?></p>
+    </footer>
+</body>
+</html>
