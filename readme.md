@@ -25,7 +25,7 @@ The system performs the following functions:
 
 ## Contents of the Archive
 
-- **installation-beta2.php**: Main installation script.
+- **installation-beta3.php**: Main installation script.
 - **debut.php** and **debut404wpclassictheme.php**: Entry points for installation, with the latter tailored for WordPress sites.
 - **gestion.php** (or **gestion-template.php**): Admin interface for managing the blacklist, IP bans, and IP abuse checks.
 - **ifwordpress.php**: Checks if the site is running WordPress and applies specific verifications.
