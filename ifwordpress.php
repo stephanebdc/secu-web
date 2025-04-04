@@ -1,7 +1,5 @@
 <?php
 /**
- * Script unique à placer à la racine du site.
- * Ce script :
  *  - Affiche un formulaire pour demander le mot de passe.
  *  - Si le mot de passe est correct, il recherche le dossier wp-content/themes,
  *    liste les thèmes (les dossiers) et propose à l’utilisateur de sélectionner l’un d’eux.
