@@ -13,7 +13,7 @@
 session_start();
 
 // Définir le mot de passe (à personnaliser)
-$motdepasseAttendu = 'merdierdeCHATTE2'; // modifiez ici
+$motdepasseAttendu = 'passsssss428575'; // modifiez ici
 
 // Si aucune action n'est définie, on affiche le formulaire de mot de passe
 if (!isset($_POST['action'])) {
