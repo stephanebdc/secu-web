@@ -1,0 +1,36 @@
+{
+    "name": "stephanebdc/secu-web",
+    "description": "Outil PHP pour bloquer ou limiter les mauvais crawlers (anti-bad-crawlers)",
+  "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Stéphane BDC",
+            "email": "dev@toscan.net"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "SecuWeb\\": "src/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4.33"
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
