@@ -6,7 +6,6 @@
  *  - Si le mot de passe est correct, il recherche le dossier wp-content/themes,
  *    liste les thèmes (les dossiers) et propose à l’utilisateur de sélectionner l’un d’eux.
  *  - Une fois le thème choisi, il ouvre le fichier 404.php du thème et y insère un extrait de code
- *    (pour l’instant, "<?php echo 'hello'; ?>" est inséré en tête de fichier).
  *  - Enfin, il se désactive en écrivant une règle de refus dans le .htaccess pour son propre fichier.
  */
 
