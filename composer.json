@@ -1,7 +1,14 @@
 {
     "name": "stephanebdc/secu-web",
     "description": "Outil PHP pour bloquer ou limiter les mauvais crawlers (anti-bad-crawlers)",
-    "type": "project",
+  "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Stéphane BDC",
+            "email": "dev@toscan.net"
+        }
+    ],
     "require": {
         "php": "^7.4",
         "ext-json": "*"
