@@ -24,7 +24,7 @@ function isValidIp($ip) {
     return filter_var(trim($ip), FILTER_VALIDATE_IP) !== false;
 }
 
-$activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'logs';
+$activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'dashboard';
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -277,6 +277,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 end_switch:
+
+// --- Données du dashboard ---
+function getDashboardData() {
+    $data = [
+        'bans_actifs'    => 0,
+        'bans_commentes' => 0,
+        'blacklist'      => 0,
+        'desactivated'   => 0,
+        'log404_total'   => 0,
+        'log404_recent'  => [],
+        'bans_list'      => [],
+    ];
+
+    // IPs depuis .htaccess
+    $htFile = __DIR__ . '/.htaccess';
+    if (file_exists($htFile)) {
+        foreach (file($htFile) as $line) {
+            $t = trim($line);
+            if (preg_match('/^deny from\s+(\S+)/i', $t, $m))  { $data['bans_actifs']++;    $data['bans_list'][] = $m[1]; }
+            if (preg_match('/^#deny from\s+(\S+)/i', $t))      { $data['bans_commentes']++; }
+        }
+    }
+
+    // Blacklist
+    $bl = __DIR__ . '/blacklist.txt';
+    if (file_exists($bl)) {
+        $lines = file($bl, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $data['blacklist'] = count($lines);
+    }
+
+    // Désactivés
+    $dv = __DIR__ . '/desactivated.txt';
+    if (file_exists($dv)) {
+        $data['desactivated'] = count(file($dv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));
+    }
+
+    // Log 404
+    $lf = __DIR__ . '/404_visitor_log.txt';
+    if (file_exists($lf)) {
+        $lines = file($lf, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $data['log404_total']  = count($lines);
+        $data['log404_recent'] = array_slice(array_reverse($lines), 0, 10);
+    }
+
+    // Garder seulement les 8 dernières IPs bannies
+    $data['bans_list'] = array_slice(array_reverse($data['bans_list']), 0, 8);
+
+    return $data;
+}
 ?>
 
 <!DOCTYPE html>
@@ -400,6 +449,66 @@ end_switch:
             cursor: pointer;
         }
         .ban-button:hover { background-color: #da190b; }
+        /* Dashboard */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .dash-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            text-align: center;
+            border-top: 4px solid #ccc;
+        }
+        .dash-card.red   { border-top-color: #ef4444; }
+        .dash-card.blue  { border-top-color: #3b82f6; }
+        .dash-card.amber { border-top-color: #f59e0b; }
+        .dash-card.green { border-top-color: #10b981; }
+        .dash-card.gray  { border-top-color: #6b7280; }
+        .dash-icon { font-size: 1.6rem; margin-bottom: 6px; }
+        .dash-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .dash-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+        .dash-section { margin-bottom: 24px; }
+        .dash-section h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #9ca3af;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .dash-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        .dash-table td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; font-family: monospace; color: #374151; }
+        .dash-table tr:last-child td { border: none; }
+        .dash-table tr:hover td { background: #f9fafb; }
+        .dash-empty { color: #9ca3af; font-size: 0.85rem; padding: 10px 0; }
+        .dash-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #b91c1c;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
         .check-button {
             background: linear-gradient(45deg, #4CAF50, #FFEB3B, #FF9800, #F44336, #2196F3, #9C27B0);
             color: white;
@@ -435,6 +544,7 @@ end_switch:
 </head>
 <body>
     <div class="sidebar">
+        <a href="?tab=dashboard" class="<?php echo ($activeTab == 'dashboard') ? 'active' : ''; ?>">📊 Tableau de bord</a>
         <a href="?tab=logs" class="<?php echo ($activeTab == 'logs') ? 'active' : ''; ?>">📄 Logs</a>
         <a href="?tab=addblackpath" class="<?php echo ($activeTab == 'addblackpath') ? 'active' : ''; ?>">➕ Ajouter Chemin Blacklist</a>
         <a href="?tab=desactivatepath" class="<?php echo ($activeTab == 'desactivatepath') ? 'active' : ''; ?>">🔄 Désactiver/Réactiver Chemin</a>
@@ -445,7 +555,86 @@ end_switch:
             <div class="message"><?php echo htmlspecialchars($message); ?></div>
         <?php endif; ?>
 
-        <?php if ($activeTab == 'logs'): ?>
+        <?php if ($activeTab == 'dashboard'):
+            $d = getDashboardData();
+        ?>
+            <h2>Tableau de bord</h2>
+
+            <div class="dash-grid">
+                <div class="dash-card red">
+                    <div class="dash-icon">🚫</div>
+                    <div class="dash-value"><?= $d['bans_actifs'] ?></div>
+                    <div class="dash-label">IPs bannies</div>
+                </div>
+                <div class="dash-card gray">
+                    <div class="dash-icon">💤</div>
+                    <div class="dash-value"><?= $d['bans_commentes'] ?></div>
+                    <div class="dash-label">IPs débanniées</div>
+                </div>
+                <div class="dash-card blue">
+                    <div class="dash-icon">📋</div>
+                    <div class="dash-value"><?= number_format($d['blacklist']) ?></div>
+                    <div class="dash-label">Chemins blacklist</div>
+                </div>
+                <div class="dash-card amber">
+                    <div class="dash-icon">⏸</div>
+                    <div class="dash-value"><?= $d['desactivated'] ?></div>
+                    <div class="dash-label">Désactivés</div>
+                </div>
+                <div class="dash-card green">
+                    <div class="dash-icon">👁</div>
+                    <div class="dash-value"><?= number_format($d['log404_total']) ?></div>
+                    <div class="dash-label">404 loggés</div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+                <div class="dash-section">
+                    <h3>Derniers chemins 404 détectés</h3>
+                    <?php if (!empty($d['log404_recent'])): ?>
+                    <table class="dash-table">
+                        <?php foreach ($d['log404_recent'] as $path): ?>
+                        <tr>
+                            <td title="<?= htmlspecialchars($path) ?>">
+                                <?= htmlspecialchars(strlen($path) > 48 ? substr($path, 0, 48) . '…' : $path) ?>
+                            </td>
+                            <td style="width:90px;text-align:right;">
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                    <input type="hidden" name="action" value="addblackpath">
+                                    <input type="hidden" name="path" value="<?= htmlspecialchars($path) ?>">
+                                    <button type="submit" style="background:#ef4444;color:white;border:none;padding:2px 7px;border-radius:3px;font-size:0.72rem;cursor:pointer;">+ BL</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </table>
+                    <p style="margin-top:8px;"><a href="?tab=addblackpath" style="font-size:0.8rem;color:#6b7280;">Voir tous les chemins →</a></p>
+                    <?php else: ?>
+                    <p class="dash-empty">Aucun 404 enregistré.</p>
+                    <?php endif; ?>
+                </div>
+
+                <div class="dash-section">
+                    <h3>IPs bannies récentes</h3>
+                    <?php if (!empty($d['bans_list'])): ?>
+                    <table class="dash-table">
+                        <?php foreach ($d['bans_list'] as $ip): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($ip) ?><span class="dash-badge">BAN</span></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </table>
+                    <p style="margin-top:8px;"><a href="?tab=unban" style="font-size:0.8rem;color:#6b7280;">Gérer les IPs →</a></p>
+                    <?php else: ?>
+                    <p class="dash-empty">Aucune IP bannie.</p>
+                    <?php endif; ?>
+                </div>
+
+            </div>
+
+        <?php elseif ($activeTab == 'logs'): ?>
             <h2>Logs</h2>
             <h3>perdus_logs.html</h3>
             <iframe src="perdus_logs.html"></iframe>
