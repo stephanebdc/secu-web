@@ -1,14 +1,18 @@
-<?php 
+<?php
 
-$statsFile = 'stats.html';
-$ip = $_SERVER['REMOTE_ADDR'];
-$dateTime = date('Y-m-d H:i:s');
-$referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'Direct';
+$statsFile = __DIR__ . '/stats.html';
+$ip        = $_SERVER['REMOTE_ADDR'];
+$dateTime  = date('Y-m-d H:i:s');
+$referer   = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'Direct';
+$papage    = $_SERVER['REQUEST_URI'];
 
-$papage = $_SERVER['REQUEST_URI'];
+// FIX: Échapper toutes les données contrôlées par l'utilisateur avant écriture en HTML (anti-XSS)
+$safeIp     = htmlspecialchars($ip,      ENT_QUOTES, 'UTF-8');
+$safeReferer = htmlspecialchars($referer, ENT_QUOTES, 'UTF-8');
+$safePage   = htmlspecialchars($papage,  ENT_QUOTES, 'UTF-8');
 
+$newEntry = "<tr><td>$safeIp</td><td>$dateTime</td><td>$safeReferer depuis $safePage</td></tr>";
 
-$newEntry = "<tr><td>$ip</td><td>$dateTime</td><td>$referer depuis $papage</td></tr>";
 $initialContent = "<html><head>
 <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
 <script src='https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js'></script>
@@ -21,16 +25,19 @@ $initialContent = "<html><head>
   <tbody></tbody>
 </table>
 <script>
-$(document).ready(function() { $('#statsTable').DataTable(); });
+\$(document).ready(function() { \$('#statsTable').DataTable(); });
 </script>
 </body><!-- nouveau --></html>";
+
 $fp = fopen($statsFile, 'c+');
 if ($fp === false) {
-    die("Erreur lors de l'ouverture de $statsFile.");
+    return; // FIX: ne pas die() — ne pas révéler le chemin serveur
 }
 if (!flock($fp, LOCK_EX)) {
-    die("Impossible de verrouiller $statsFile.");
+    fclose($fp);
+    return;
 }
+
 $currentContent = stream_get_contents($fp);
 if (trim($currentContent) === '') {
     $currentContent = $initialContent;
@@ -40,10 +47,10 @@ if (strpos($currentContent, '</tbody>') !== false) {
 } else {
     $currentContent = str_replace('<tbody>', '<tbody>' . $newEntry, $currentContent);
 }
+
 rewind($fp);
 ftruncate($fp, 0);
 fwrite($fp, $currentContent);
 fflush($fp);
 flock($fp, LOCK_UN);
 fclose($fp);
-?>
