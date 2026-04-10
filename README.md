@@ -4,6 +4,18 @@ Module de sécurité PHP pour sites Apache — protection 404, blacklist de chem
 
 ---
 
+## Pourquoi ce module ?
+
+Des solutions comme Cloudflare, Fail2ban ou les WAF cloud font très bien ce travail — et souvent mieux. Ce module n'est pas là pour les remplacer.
+
+Son intérêt est différent : il fonctionne **localement, directement sur le serveur**, sans dépendance externe, sans proxy, sans abonnement. Tout est lisible, modifiable, contrôlable. Pour un hébergement mutualisé standard où on ne peut pas installer Fail2ban ni configurer un pare-feu réseau, c'est une couche de sécurité supplémentaire qu'on maîtrise entièrement.
+
+### Limitation connue — performances
+
+Actuellement, le module repose sur PHP exécuté à chaque requête. Cela a un coût en ressources serveur non négligeable, surtout sur les sites à fort trafic. **Ce point est en cours de correction** — l'objectif est de déplacer la logique critique (blacklist, ban) vers des règles `.htaccess` statiques évaluées directement par Apache, sans passer par PHP.
+
+---
+
 ## Fonctionnalités
 
 - Journalisation des visites (index) et des erreurs 404
