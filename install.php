@@ -299,6 +299,14 @@ function stepWordpress($csrfToken) {
 
     $isWp = file_exists('wp-config.php') || is_dir('wp-content');
 
+    // Stocker le flag wordpress dans pipou.ini (sans écraser les autres clés)
+    $pipouFile = __DIR__ . '/pipou.ini';
+    $pipou = file_exists($pipouFile) ? (parse_ini_file($pipouFile) ?: []) : [];
+    $pipou['wordpress'] = $isWp ? '1' : '0';
+    $ini = '';
+    foreach ($pipou as $k => $v) { $ini .= "$k = $v\n"; }
+    file_put_contents($pipouFile, $ini);
+
     if ($isWp) {
         echo '<div class="alert alert-info"><span>ℹ</span> Installation WordPress détectée.</div>';
         echo '<div class="card">';
@@ -309,7 +317,7 @@ function stepWordpress($csrfToken) {
         echo '<p style="margin-top:.75rem;font-size:.85rem;color:#9ca3af;">Une fois le module configuré, revenez ici pour continuer.</p>';
         echo '</div>';
     } else {
-        echo '<div class="alert alert-info"><span>ℹ</span> Pas de WordPress détecté — étape ignorée.</div>';
+        echo '<div class="alert alert-success"><span>✓</span> Pas de WordPress détecté — blacklist automatique des chemins WP activée.</div>';
     }
 
     echo '<div class="btn-row"><a href="install.php?step=4" class="btn btn-primary">Continuer →</a></div>';
@@ -393,8 +401,13 @@ function stepApiKey($csrfToken) {
         $apiKey = trim($_POST['api_key'] ?? '');
         $apiKey = preg_replace('/[^a-zA-Z0-9\-_]/', '', $apiKey);
         if (strlen($apiKey) >= 20) {
-            $iniContent = "api_key = $apiKey\n";
-            if (file_put_contents(__DIR__ . '/pipou.ini', $iniContent) !== false) {
+            // Merge dans pipou.ini sans écraser les autres clés (ex: wordpress)
+            $pipouFile = __DIR__ . '/pipou.ini';
+            $existing = file_exists($pipouFile) ? (parse_ini_file($pipouFile) ?: []) : [];
+            $existing['api_key'] = $apiKey;
+            $iniContent = '';
+            foreach ($existing as $k => $v) { $iniContent .= "$k = $v\n"; }
+            if (file_put_contents($pipouFile, $iniContent) !== false) {
                 $saved = true;
             } else {
                 $apiError = 'Erreur lors de l\'écriture du fichier pipou.ini.';

@@ -1,5 +1,44 @@
 <?php
 
+// Retourne true si le chemin ressemble à un chemin WordPress
+function isWordpressPath($path) {
+    $p = strtolower(strtok(rawurldecode($path), '?'));
+    $patterns = [
+        '#(^|/)wp-(admin|login|includes|content|cron|signup|json|config|mail|comments|trackback|register)[/.]#',
+        '#(^|/)(wordpress|wp)/#',
+        '#(^|/)wp-[a-z\-]+\.php#',
+        '#(^|/)xmlrpc\.php#',
+        '#(^|/)wp-content/(plugins|themes|uploads)/#',
+    ];
+    foreach ($patterns as $pat) {
+        if (preg_match($pat, $p)) return true;
+    }
+    return false;
+}
+
+// Retourne true si le site n'est pas WordPress (flag dans pipou.ini)
+function isNonWordpressSite() {
+    $pipouFile = __DIR__ . '/pipou.ini';
+    if (!file_exists($pipouFile)) return false;
+    $pipou = parse_ini_file($pipouFile);
+    return isset($pipou['wordpress']) && $pipou['wordpress'] === '0';
+}
+
+// Ajoute un chemin dans blacklist.txt s'il n'y est pas déjà
+function addToBlacklist($path) {
+    $file = __DIR__ . '/blacklist.txt';
+    $lines = file_exists($file) ? file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
+    if (in_array($path, $lines)) return;
+    $fp = fopen($file, 'a');
+    if ($fp) {
+        flock($fp, LOCK_EX);
+        fwrite($fp, $path . "\n");
+        fflush($fp);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+    }
+}
+
 function getUserIP() {
     return $_SERVER['REMOTE_ADDR'];
 }
@@ -125,6 +164,14 @@ $referrer      = getReferrer();
 $requestedPage = getRequestedPage();
 
 logVisitorInfo($ip, $referrer, $requestedPage);
+
+// Blacklist automatique des chemins WordPress sur site non-WP
+if (isNonWordpressSite() && isWordpressPath($requestedPage)) {
+    addToBlacklist($requestedPage);
+    addDenyRule($ip);
+    header("Location: /403_.html");
+    exit();
+}
 
 if (isBlacklisted($requestedPage)) {
     addDenyRule($ip);
