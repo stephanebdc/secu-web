@@ -14,6 +14,9 @@ Son intérêt est différent : il fonctionne **localement, directement sur le se
 
 Actuellement, le module repose sur PHP exécuté à chaque requête. Cela a un coût en ressources serveur non négligeable, surtout sur les sites à fort trafic. **Ce point est en cours de correction** — l'objectif est de déplacer la logique critique (blacklist, ban) vers des règles `.htaccess` statiques évaluées directement par Apache, sans passer par PHP.
 
+### Pour qui ?
+Plutôt les "petits" sites qui utilisent encore du php en accès direct, pour des wordpress sur des hébergements mutualisés, etc.
+
 ---
 
 ## Fonctionnalités
