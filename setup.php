@@ -30,6 +30,16 @@ foreach ($files as $name => $b64content) {
     }
 }
 
+// Mise à jour de gestion.php si déjà installé
+if (file_exists(__DIR__ . '/gestion.php') && file_exists(__DIR__ . '/gestion-template.php')) {
+    $tpl = file_get_contents(__DIR__ . '/gestion-template.php');
+    if ($tpl !== false && file_put_contents(__DIR__ . '/gestion.php', $tpl) !== false) {
+        $written[] = 'gestion.php (mise à jour)';
+    } else {
+        $errors[] = 'gestion.php (mise à jour échouée)';
+    }
+}
+
 // Auto-suppression
 $selfDeleted = @unlink(__FILE__);
 
