@@ -295,8 +295,8 @@ function getDashboardData() {
     if (file_exists($htFile)) {
         foreach (file($htFile) as $line) {
             $t = trim($line);
-            if (preg_match('/^deny from\s+(\S+)/i', $t, $m))  { $data['bans_actifs']++;    $data['bans_list'][] = $m[1]; }
-            if (preg_match('/^#deny from\s+(\S+)/i', $t))      { $data['bans_commentes']++; }
+            if (preg_match('/^deny from\s+(\S+)/i', $t, $m) && isValidIp($m[1]))  { $data['bans_actifs']++;    $data['bans_list'][] = $m[1]; }
+            if (preg_match('/^#deny from\s+(\S+)/i', $t, $m) && isValidIp($m[1]))  { $data['bans_commentes']++; }
         }
     }
 
@@ -771,9 +771,9 @@ function parseHtmlLog($file, $maxRows = 300) {
                 foreach ($lines as $line) {
                     $trimLine = trim($line);
                     if (preg_match('/^deny from\s+(\S+)/i', $trimLine, $matches)) {
-                        $activeBans[] = $matches[1];
+                        if (isValidIp($matches[1])) $activeBans[] = $matches[1];
                     } elseif (preg_match('/^#deny from\s+(\S+)/i', $trimLine, $matches)) {
-                        $commentedBans[] = $matches[1];
+                        if (isValidIp($matches[1])) $commentedBans[] = $matches[1];
                     }
                 }
             }
