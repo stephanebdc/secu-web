@@ -359,195 +359,76 @@ function parseHtmlLog($file, $maxRows = 300) {
     <meta charset="UTF-8">
     <title>Interface de gestion de sécurité</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-        .sidebar {
-            width: 200px;
-            background-color: #f2f2f2;
-            height: 100vh;
-            padding-top: 20px;
-            box-sizing: border-box;
-        }
-        .sidebar a {
-            display: block;
-            padding: 10px 15px;
-            text-decoration: none;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .sidebar a.active {
-            background-color: #333;
-            color: #fff;
-        }
-        .content {
-            flex-grow: 1;
-            padding: 20px;
-        }
-        iframe {
-            width: 100%;
-            height: 300px;
-            border: 1px solid #ccc;
-            margin-bottom: 20px;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .message {
-            padding: 10px;
-            background-color: #e0ffe0;
-            border: 1px solid #00aa00;
-            margin-bottom: 20px;
-        }
-        .add-button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .add-button:hover { background-color: #45a049; }
-        .delete-button {
-            background-color: #f44336;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .delete-button:hover { background-color: #da190b; }
-        .deactivate-button {
-            background-color: #ff9800;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .deactivate-button:hover { background-color: #e68a00; }
-        .reactivate-button {
-            background-color: #2196F3;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .reactivate-button:hover { background-color: #1976D2; }
-        .unban-button {
-            background-color: #2196F3;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .unban-button:hover { background-color: #1976D2; }
-        .ban-button {
-            background-color: #f44336;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .ban-button:hover { background-color: #da190b; }
-        /* Dashboard */
-        .dash-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        .dash-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px 16px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-            text-align: center;
-            border-top: 4px solid #ccc;
-        }
-        .dash-card.red   { border-top-color: #ef4444; }
-        .dash-card.blue  { border-top-color: #3b82f6; }
-        .dash-card.amber { border-top-color: #f59e0b; }
-        .dash-card.green { border-top-color: #10b981; }
-        .dash-card.gray  { border-top-color: #6b7280; }
-        .dash-icon { font-size: 1.6rem; margin-bottom: 6px; }
-        .dash-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1a1a2e;
-            line-height: 1;
-            margin-bottom: 4px;
-        }
-        .dash-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #9ca3af;
-            font-weight: 600;
-        }
-        .dash-section { margin-bottom: 24px; }
-        .dash-section h3 {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: #9ca3af;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-        .dash-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-        .dash-table td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; font-family: monospace; color: #374151; }
-        .dash-table tr:last-child td { border: none; }
-        .dash-table tr:hover td { background: #f9fafb; }
-        .dash-empty { color: #9ca3af; font-size: 0.85rem; padding: 10px 0; }
-        .dash-badge {
-            display: inline-block;
-            background: #fee2e2;
-            color: #b91c1c;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-weight: 700;
-            margin-left: 6px;
-        }
+        /* ---- Reset & base ---- */
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#333;display:flex;min-height:100vh;}
 
-        .check-button {
-            background: linear-gradient(45deg, #4CAF50, #FFEB3B, #FF9800, #F44336, #2196F3, #9C27B0);
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-        .check-button:hover {
-            background: linear-gradient(45deg, #388E3C, #FBC02D, #FF5722, #E91E63, #03A9F4, #673AB7);
-        }
+        /* ---- Sidebar ---- */
+        .sidebar{width:220px;background:#1a1a2e;flex-shrink:0;display:flex;flex-direction:column;padding:1.25rem 0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+        .sidebar-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#4b5563;padding:.25rem 1.25rem 1rem;font-weight:700;}
+        .sidebar a{display:flex;align-items:center;gap:.6rem;padding:.65rem 1.25rem;text-decoration:none;color:#94a3b8;font-size:.875rem;border-left:3px solid transparent;transition:all .15s;}
+        .sidebar a:hover{color:#e2e8f0;background:rgba(255,255,255,.05);}
+        .sidebar a.active{color:#fff;background:rgba(59,130,246,.15);border-left-color:#3b82f6;font-weight:600;}
+
+        /* ---- Main content ---- */
+        .content{flex:1;padding:2rem 2.5rem;max-width:1100px;}
+        .content h2{font-size:1.4rem;color:#1a1a2e;margin-bottom:.25rem;}
+        .content .page-sub{color:#6b7280;font-size:.875rem;margin-bottom:1.5rem;}
+
+        /* ---- Cards ---- */
+        .card{background:white;border-radius:8px;padding:1.25rem;margin-bottom:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+        /* ---- Message / alerts ---- */
+        .message{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:6px;margin-bottom:1.25rem;font-size:.9rem;}
+
+        /* ---- Tables ---- */
+        table{border-collapse:collapse;width:100%;margin-bottom:1rem;font-size:.875rem;}
+        th{background:#f8fafc;padding:.6rem .875rem;text-align:left;border-bottom:2px solid #e2e8f0;color:#374151;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;}
+        td{padding:.55rem .875rem;border-bottom:1px solid #f1f5f9;color:#374151;}
+        tr:last-child td{border-bottom:none;}
+        tr:hover td{background:#fafbfc;}
+
+        /* ---- Buttons ---- */
+        .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.45rem 1rem;border-radius:5px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:background .15s;}
+        .add-button,.btn-success   {background:#059669;color:#fff;} .add-button:hover,.btn-success:hover{background:#047857;}
+        .delete-button,.btn-danger  {background:#dc2626;color:#fff;} .delete-button:hover,.btn-danger:hover{background:#b91c1c;}
+        .deactivate-button,.btn-warn{background:#d97706;color:#fff;} .deactivate-button:hover,.btn-warn:hover{background:#b45309;}
+        .reactivate-button,.btn-blue{background:#2563eb;color:#fff;} .reactivate-button:hover,.btn-blue:hover{background:#1d4ed8;}
+        .ban-button   {background:#dc2626;color:#fff;padding:.45rem 1rem;border:none;border-radius:5px;font-size:.82rem;font-weight:600;cursor:pointer;}
+        .ban-button:hover{background:#b91c1c;}
+        .unban-button {background:#2563eb;color:#fff;padding:.45rem 1rem;border:none;border-radius:5px;font-size:.82rem;font-weight:600;cursor:pointer;}
+        .unban-button:hover{background:#1d4ed8;}
+        .check-button {background:linear-gradient(90deg,#059669,#2563eb);color:#fff;padding:.45rem 1rem;border:none;border-radius:5px;font-size:.82rem;font-weight:600;cursor:pointer;}
+        .check-button:hover{background:linear-gradient(90deg,#047857,#1d4ed8);}
+
+        /* ---- Filtre blacklist ---- */
+        .filter-bar{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
+        .filter-input{flex:1;padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem;max-width:360px;}
+        .filter-input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12);}
+        .filter-count{font-size:.8rem;color:#9ca3af;}
+        .hidden-row{display:none;}
+
+        /* ---- Dashboard ---- */
+        .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:1.75rem;}
+        .dash-card{background:white;border-radius:10px;padding:1.1rem 1rem;box-shadow:0 1px 3px rgba(0,0,0,.08);text-align:center;border-top:4px solid #ccc;}
+        .dash-card.red{border-top-color:#ef4444;} .dash-card.blue{border-top-color:#3b82f6;}
+        .dash-card.amber{border-top-color:#f59e0b;} .dash-card.green{border-top-color:#10b981;} .dash-card.gray{border-top-color:#6b7280;}
+        .dash-icon{font-size:1.5rem;margin-bottom:.3rem;}
+        .dash-value{font-size:1.875rem;font-weight:700;color:#1a1a2e;line-height:1;margin-bottom:.25rem;}
+        .dash-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;font-weight:600;}
+        .dash-section{margin-bottom:1.5rem;}
+        .dash-section h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:.6rem;font-weight:700;}
+        .dash-table{width:100%;border-collapse:collapse;font-size:.875rem;}
+        .dash-table td{padding:.4rem .6rem;border-bottom:1px solid #f3f4f6;font-family:monospace;color:#374151;}
+        .dash-table tr:last-child td{border:none;}
+        .dash-table tr:hover td{background:#f9fafb;}
+        .dash-empty{color:#9ca3af;font-size:.85rem;padding:.5rem 0;}
+        .dash-badge{display:inline-block;background:#fee2e2;color:#b91c1c;font-size:.65rem;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:.35rem;}
+
+        /* ---- IP form ---- */
+        .ip-form{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+        .ip-input{padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem;min-width:220px;}
+        .ip-input:focus{outline:none;border-color:#3b82f6;}
     </style>
     <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
@@ -571,18 +452,41 @@ function parseHtmlLog($file, $maxRows = 300) {
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <script>
     $(document).ready(function() {
-        if ($('#logTable404').length)  $('#logTable404').DataTable({ order: [[0,'desc']], pageLength: 25, language: { search: 'Filtrer :', lengthMenu: 'Afficher _MENU_ entrées', info: '_START_–_END_ sur _TOTAL_', paginate: { previous: '←', next: '→' } } });
-        if ($('#logTableStats').length) $('#logTableStats').DataTable({ order: [[1,'desc']], pageLength: 25, language: { search: 'Filtrer :', lengthMenu: 'Afficher _MENU_ entrées', info: '_START_–_END_ sur _TOTAL_', paginate: { previous: '←', next: '→' } } });
+        if ($('#logTable404').length)   $('#logTable404').DataTable({ order:[[0,'desc']], pageLength:25, language:{search:'Filtrer :',lengthMenu:'Afficher _MENU_ entrées',info:'_START_–_END_ sur _TOTAL_',paginate:{previous:'←',next:'→'}} });
+        if ($('#logTableStats').length) $('#logTableStats').DataTable({ order:[[1,'desc']], pageLength:25, language:{search:'Filtrer :',lengthMenu:'Afficher _MENU_ entrées',info:'_START_–_END_ sur _TOTAL_',paginate:{previous:'←',next:'→'}} });
     });
+
+    // Filtre temps réel pour les tables de blacklist
+    function filterTable(inputId, tableId) {
+        var input = document.getElementById(inputId);
+        var counter = document.getElementById(inputId + '_count');
+        if (!input) return;
+        input.addEventListener('input', function() {
+            var val = this.value.toLowerCase().trim();
+            var rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+            var visible = 0;
+            rows.forEach(function(row) {
+                var text = row.textContent.toLowerCase();
+                var match = val === '' || text.indexOf(val) !== -1;
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            if (counter) counter.textContent = visible + ' / ' + rows.length;
+        });
+    }
+    filterTable('filter_blacklist', 'tbl_blacklist');
+    filterTable('filter_desact',    'tbl_desact');
+    filterTable('filter_logpaths',  'tbl_logpaths');
     </script>
 </head>
 <body>
     <div class="sidebar">
-        <a href="?tab=dashboard" class="<?php echo ($activeTab == 'dashboard') ? 'active' : ''; ?>">📊 Tableau de bord</a>
-        <a href="?tab=logs" class="<?php echo ($activeTab == 'logs') ? 'active' : ''; ?>">📄 Logs</a>
-        <a href="?tab=addblackpath" class="<?php echo ($activeTab == 'addblackpath') ? 'active' : ''; ?>">➕ Ajouter Chemin Blacklist</a>
-        <a href="?tab=desactivatepath" class="<?php echo ($activeTab == 'desactivatepath') ? 'active' : ''; ?>">🔄 Désactiver/Réactiver Chemin</a>
-        <a href="?tab=unban" class="<?php echo ($activeTab == 'unban') ? 'active' : ''; ?>">🔓 Unban IP</a>
+        <div class="sidebar-title">Sécurité Web</div>
+        <a href="?tab=dashboard"      class="<?= ($activeTab=='dashboard')      ? 'active':'' ?>">📊 Tableau de bord</a>
+        <a href="?tab=logs"           class="<?= ($activeTab=='logs')           ? 'active':'' ?>">📄 Logs</a>
+        <a href="?tab=addblackpath"   class="<?= ($activeTab=='addblackpath')   ? 'active':'' ?>">➕ Blacklist — chemins</a>
+        <a href="?tab=desactivatepath"class="<?= ($activeTab=='desactivatepath')? 'active':'' ?>">🔄 Gérer la blacklist</a>
+        <a href="?tab=unban"          class="<?= ($activeTab=='unban')          ? 'active':'' ?>">🛡 Gestion IPs</a>
     </div>
     <div class="content">
         <?php if ($message): ?>
@@ -726,47 +630,54 @@ function parseHtmlLog($file, $maxRows = 300) {
             <?php endif; ?>
 
         <?php elseif ($activeTab == 'addblackpath'): ?>
-            <h2>Ajouter un chemin à la blacklist</h2>
-            <p>Liste des chemins issus du fichier 404_visitor_log.txt :</p>
+            <h2>Blacklist — chemins détectés</h2>
+            <p class="page-sub">Chemins issus du log 404. Ajoutez-les à la blacklist pour bloquer les attaquants automatiquement.</p>
             <?php
-                $logFile = __DIR__ . '/404_visitor_log.txt';
-                $blacklistFile = __DIR__ . '/blacklist.txt';
-                $logPaths = file_exists($logFile) ? file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
-                $logPaths = array_unique($logPaths);
+                $logFile      = __DIR__ . '/404_visitor_log.txt';
+                $blacklistFile= __DIR__ . '/blacklist.txt';
+                $logPaths     = file_exists($logFile) ? file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
+                $logPaths     = array_unique($logPaths);
                 $currentBlacklist = file_exists($blacklistFile) ? file($blacklistFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
                 if (count($logPaths) > 0):
             ?>
-                <table>
-                    <tr>
-                        <th>Chemin</th>
-                        <th>Action</th>
-                    </tr>
+                <div class="filter-bar">
+                    <input type="text" id="filter_logpaths" class="filter-input" placeholder="🔍 Filtrer les chemins...">
+                    <span class="filter-count" id="filter_logpaths_count"><?= count($logPaths) ?> / <?= count($logPaths) ?></span>
+                </div>
+                <div class="card" style="padding:0;overflow:hidden;">
+                <table id="tbl_logpaths">
+                    <thead><tr><th>Chemin</th><th style="width:200px;">Action</th></tr></thead>
+                    <tbody>
                     <?php foreach ($logPaths as $path): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($path); ?></td>
+                        <td style="font-family:monospace;font-size:.82rem;" title="<?= htmlspecialchars($path) ?>">
+                            <?= htmlspecialchars(strlen($path) > 80 ? substr($path,0,80).'…' : $path) ?>
+                        </td>
                         <td>
                             <?php if (!in_array($path, $currentBlacklist)): ?>
-                                <form method="POST" style="display:inline; margin-right:10px;">
-                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+                                <form method="POST" style="display:inline;margin-right:6px;">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                                     <input type="hidden" name="action" value="addblackpath">
-                                    <input type="hidden" name="path" value="<?php echo htmlspecialchars($path); ?>">
-                                    <input type="submit" value="Ajouter" class="add-button">
+                                    <input type="hidden" name="path" value="<?= htmlspecialchars($path) ?>">
+                                    <button type="submit" class="add-button">+ Blacklist</button>
                                 </form>
                             <?php else: ?>
-                                <span style="color:gray;">Déjà en blacklist</span>
+                                <span style="color:#9ca3af;font-size:.8rem;">✓ déjà blacklisté</span>
                             <?php endif; ?>
                             <form method="POST" style="display:inline;">
-                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                                 <input type="hidden" name="action" value="deleteLogPath">
-                                <input type="hidden" name="path" value="<?php echo htmlspecialchars($path); ?>">
-                                <input type="submit" value="Effacer" class="delete-button">
+                                <input type="hidden" name="path" value="<?= htmlspecialchars($path) ?>">
+                                <button type="submit" class="delete-button">Ignorer</button>
                             </form>
                         </td>
                     </tr>
                     <?php endforeach; ?>
+                    </tbody>
                 </table>
+                </div>
             <?php else: ?>
-                <p>Aucun chemin trouvé dans le log.</p>
+                <p style="color:#9ca3af;">Aucun chemin dans le log.</p>
             <?php endif; ?>
 
         <?php elseif ($activeTab == 'desactivatepath'): ?>
@@ -777,8 +688,12 @@ function parseHtmlLog($file, $maxRows = 300) {
             $blacklist = file_exists($blacklistFile) ? file($blacklistFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
             if (count($blacklist) > 0):
             ?>
-                <div style="max-height: 70vh; overflow-y: auto;">
-                    <table>
+                <div class="filter-bar">
+                    <input type="text" id="filter_blacklist" class="filter-input" placeholder="🔍 Filtrer les chemins actifs..." oninput="filterTable('filter_blacklist','tbl_blacklist')">
+                    <span class="filter-count" id="filter_blacklist_count"><?php echo count($blacklist); ?> / <?php echo count($blacklist); ?></span>
+                </div>
+                <div style="max-height: 60vh; overflow-y: auto;">
+                    <table id="tbl_blacklist">
                         <tr>
                             <th style="width: 70%;">Chemin</th>
                             <th style="width: 30%;">Action</th>
@@ -810,7 +725,11 @@ function parseHtmlLog($file, $maxRows = 300) {
                 $desactivated = file_exists($desactivatedFile) ? file($desactivatedFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
                 if (count($desactivated) > 0):
             ?>
-                <table>
+                <div class="filter-bar">
+                    <input type="text" id="filter_desact" class="filter-input" placeholder="🔍 Filtrer les chemins désactivés..." oninput="filterTable('filter_desact','tbl_desact')">
+                    <span class="filter-count" id="filter_desact_count"><?php echo count($desactivated); ?> / <?php echo count($desactivated); ?></span>
+                </div>
+                <table id="tbl_desact">
                     <tr>
                         <th>Chemin</th>
                         <th>Action</th>
@@ -913,11 +832,11 @@ function parseHtmlLog($file, $maxRows = 300) {
             <?php endif; ?>
 
             <h3>Ajouter une IP</h3>
-            <form method="POST" style="margin:0;">
+            <form method="POST" class="ip-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <input type="hidden" name="action" value="banIP">
-                <input type="text" name="ip" placeholder="Entrez l'IP à bannir" style="padding:8px; margin-right:10px;">
-                <input type="submit" value="Bannir IP" class="ban-button">
+                <input type="text" name="ip" class="ip-input" placeholder="Entrez l'IP à bannir (ex: 1.2.3.4)">
+                <button type="submit" class="btn btn-danger">Bannir IP</button>
             </form>
 
         <?php endif; ?>
