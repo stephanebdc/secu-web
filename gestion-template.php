@@ -326,6 +326,31 @@ function getDashboardData() {
 
     return $data;
 }
+
+// Extrait les lignes <tr> d'un fichier HTML de log et les retourne sous forme de tableau
+function parseHtmlLog($file, $maxRows = 300) {
+    if (!file_exists($file)) return [];
+    $content = file_get_contents($file);
+    // Extraire uniquement le <tbody> pour éviter les lignes d'en-tête
+    $body = '';
+    if (preg_match('/<tbody>(.*?)<\/tbody>/is', $content, $m)) {
+        $body = $m[1];
+    } else {
+        $body = $content;
+    }
+    preg_match_all('/<tr>(.*?)<\/tr>/is', $body, $matches);
+    $rows = [];
+    foreach ($matches[1] as $row) {
+        preg_match_all('/<td>(.*?)<\/td>/is', $row, $cells);
+        if (!empty($cells[1])) {
+            $rows[] = array_map(function($cell) {
+                return html_entity_decode(strip_tags($cell), ENT_QUOTES, 'UTF-8');
+            }, $cells[1]);
+        }
+    }
+    // Les plus récents en premier (dernières lignes du fichier)
+    return array_slice(array_reverse($rows), 0, $maxRows);
+}
 ?>
 
 <!DOCTYPE html>
@@ -541,6 +566,15 @@ function getDashboardData() {
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script>
+    $(document).ready(function() {
+        if ($('#logTable404').length)  $('#logTable404').DataTable({ order: [[0,'desc']], pageLength: 25, language: { search: 'Filtrer :', lengthMenu: 'Afficher _MENU_ entrées', info: '_START_–_END_ sur _TOTAL_', paginate: { previous: '←', next: '→' } } });
+        if ($('#logTableStats').length) $('#logTableStats').DataTable({ order: [[1,'desc']], pageLength: 25, language: { search: 'Filtrer :', lengthMenu: 'Afficher _MENU_ entrées', info: '_START_–_END_ sur _TOTAL_', paginate: { previous: '←', next: '→' } } });
+    });
+    </script>
 </head>
 <body>
     <div class="sidebar">
@@ -634,12 +668,62 @@ function getDashboardData() {
 
             </div>
 
-        <?php elseif ($activeTab == 'logs'): ?>
-            <h2>Logs</h2>
-            <h3>perdus_logs.html</h3>
-            <iframe src="perdus_logs.html"></iframe>
-            <h3>stats.html</h3>
-            <iframe src="stats.html"></iframe>
+        <?php elseif ($activeTab == 'logs'):
+            $rows404  = parseHtmlLog(__DIR__ . '/perdus_logs.html');
+            $rowsStats = parseHtmlLog(__DIR__ . '/stats.html');
+        ?>
+            <h2>Logs 404 <small style="font-size:.75rem;color:#9ca3af;font-weight:400;">(<?= count($rows404) ?> entrées affichées)</small></h2>
+            <?php if (!empty($rows404)): ?>
+            <div style="overflow-x:auto;margin-bottom:2rem;">
+                <table id="logTable404" class="display" style="width:100%;font-size:.85rem;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>IP</th>
+                            <th>Referrer</th>
+                            <th>Page demandée</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($rows404 as $row): ?>
+                        <tr>
+                            <?php foreach ($row as $cell): ?>
+                            <td><?= htmlspecialchars($cell) ?></td>
+                            <?php endforeach; ?>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php else: ?>
+            <p style="color:#9ca3af;margin-bottom:2rem;">Aucune entrée dans perdus_logs.html.</p>
+            <?php endif; ?>
+
+            <h2>Stats visites <small style="font-size:.75rem;color:#9ca3af;font-weight:400;">(<?= count($rowsStats) ?> entrées affichées)</small></h2>
+            <?php if (!empty($rowsStats)): ?>
+            <div style="overflow-x:auto;">
+                <table id="logTableStats" class="display" style="width:100%;font-size:.85rem;">
+                    <thead>
+                        <tr>
+                            <th>IP</th>
+                            <th>Date et heure</th>
+                            <th>Referer / Page</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($rowsStats as $row): ?>
+                        <tr>
+                            <?php foreach ($row as $cell): ?>
+                            <td><?= htmlspecialchars($cell) ?></td>
+                            <?php endforeach; ?>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php else: ?>
+            <p style="color:#9ca3af;">Aucune entrée dans stats.html.</p>
+            <?php endif; ?>
 
         <?php elseif ($activeTab == 'addblackpath'): ?>
             <h2>Ajouter un chemin à la blacklist</h2>
