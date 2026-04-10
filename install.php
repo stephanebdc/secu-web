@@ -638,7 +638,8 @@ function stepInstall($csrfToken) {
     }
 
     // 8 — Bloquer les scripts d'installation
-    $blockRules = "\n<Files \"install.php\">\n    Order Deny,Allow\n    deny from all\n</Files>\n"
+    // install.php : AuthType Basic (pas deny from all) pour rester accessible à l'étape 8
+    $blockRules = "\n<Files \"install.php\">\n    AuthType Basic\n    AuthName \"Restricted\"\n    AuthUserFile $htpasswdPath\n    Require valid-user\n</Files>\n"
         . "<Files \"installation-de-gestion.php\">\n    Order Deny,Allow\n    deny from all\n</Files>\n"
         . "<Files \"installation_beta3.php\">\n    Order Deny,Allow\n    deny from all\n</Files>\n";
     file_put_contents($htFile, $blockRules, FILE_APPEND);
