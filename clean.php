@@ -92,32 +92,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
         $log[] = ['info', 'Conservé : blacklist.txt'];
     }
 
-    // 3 — Sauvegardes ANCIEN-htaccess-*
-    foreach ($htaccessBackups as $backup) {
-        $name = basename($backup);
-        if (@unlink($backup)) {
-            $log[] = ['ok', "Supprimé : $name"];
-        } else {
-            $errors[] = "Impossible de supprimer : $name";
-        }
-    }
-
-    // 4 — Restauration .htaccess
+    // 3 — Restauration .htaccess (AVANT suppression des backups)
     if ($htaccessExists && $htaccessModified) {
-        $bestBackup = !empty($htaccessBackups) ? end($htaccessBackups) : null;
+        // Utiliser la PLUS ANCIENNE sauvegarde = l'état d'avant toute installation
+        $oldestBackup = !empty($htaccessBackups) ? reset($htaccessBackups) : null;
 
-        if ($bestBackup && file_exists($bestBackup)) {
-            // Restaurer depuis la sauvegarde la plus récente
-            if (@copy($bestBackup, __DIR__ . '/.htaccess')) {
-                $log[] = ['ok', '.htaccess restauré depuis ' . basename($bestBackup)];
+        if ($oldestBackup && file_exists($oldestBackup)) {
+            if (@copy($oldestBackup, __DIR__ . '/.htaccess')) {
+                $log[] = ['ok', '.htaccess restauré depuis ' . basename($oldestBackup) . ' (sauvegarde originale)'];
             } else {
                 $errors[] = 'Impossible de restaurer .htaccess';
             }
         } else {
-            // Pas de sauvegarde : on nettoie manuellement les sections connues
+            // Pas de sauvegarde : nettoyage ciblé des sections secu-web
             $cleaned = cleanHtaccess($htContent);
             if (@file_put_contents(__DIR__ . '/.htaccess', $cleaned) !== false) {
-                $log[] = ['ok', '.htaccess nettoyé (sections secu-web supprimées)'];
+                $log[] = ['ok', '.htaccess nettoyé (blocs secu-web supprimés)'];
             } else {
                 $errors[] = 'Impossible de réécrire .htaccess';
             }
@@ -126,6 +116,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
         $log[] = ['info', 'Pas de .htaccess à nettoyer'];
     } elseif (!$htaccessModified) {
         $log[] = ['info', '.htaccess non modifié — inchangé'];
+    }
+
+    // 4 — Suppression des sauvegardes ANCIEN-htaccess-* (après restauration)
+    foreach ($htaccessBackups as $backup) {
+        $name = basename($backup);
+        if (@unlink($backup)) {
+            $log[] = ['ok', "Supprimé : $name"];
+        } else {
+            $errors[] = "Impossible de supprimer : $name";
+        }
     }
 
     // 5 — Nettoyage de index.php (retrait de include debut.php)
@@ -155,17 +155,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
 // Retire les blocs <Files> et directives ajoutés par l'installeur
 // -----------------------------------------------------------------------
 function cleanHtaccess($content) {
-    // Retirer les blocs <Files "..."> ajoutés par secu-web
-    $content = preg_replace('/<Files\s+"[^"]+"\s*>\s*\n(?:(?:[ \t]+[^\n]*\n)*?)\s*<\/Files>\s*\n?/m', '', $content);
-    // Retirer les ErrorDocument ajoutés
+    // Fichiers connus de secu-web — on ne retire QUE ces blocs <Files>
+    $secuwebFiles = [
+        'stats\.html', 'perdus_logs\.html', '404_visitor_log\.txt',
+        'blacklist\.txt', 'gestion\.php', 'debut\.php', 'sample_index',
+        'desactivated\.txt', 'debut404wpclassictheme\.php', 'ifwordpress\.php',
+        'blacklistverif\.php', 'pipou\.ini', 'gestion-template\.php',
+        'setup\.token', 'install\.php', 'installation-de-gestion\.php',
+        'installation_beta3?\.php', 'installation_beta\.php',
+        'ANCIEN-htaccess-[0-9]+',
+    ];
+    foreach ($secuwebFiles as $f) {
+        $content = preg_replace(
+            '/<Files\s+"' . $f . '"\s*>.*?<\/Files>\s*\n?/is',
+            '',
+            $content
+        );
+    }
+    // Retirer les ErrorDocument ajoutés par secu-web
     $content = preg_replace('/^ErrorDocument\s+(404|403)\s+\/(404\.php|403_\.html)\s*$/m', '', $content);
-    // Retirer les blocs RewriteEngine ajoutés par secu-web (bloc connu)
+    // Retirer les règles RewriteEngine ajoutées par secu-web (bloc connu)
     $content = preg_replace(
         '/\nRewriteEngine On\nRewriteCond %\{THE_REQUEST\}.*?\n.*?\n.*?\n.*?\n/s',
         "\n",
         $content
     );
-    // Retirer les commentaires de protection de sauvegarde
+    // Retirer les commentaires de sauvegarde secu-web
     $content = preg_replace('/^# (?:Protection|Sauvegarde)[^\n]*\n/m', '', $content);
     // Retirer les "deny from IP" (bans ajoutés en temps réel)
     $content = preg_replace('/^(?:#\s*)?deny from \S+\s*$/m', '', $content);
