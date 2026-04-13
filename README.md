@@ -43,7 +43,7 @@ Plutôt les "petits" sites qui utilisent encore du php en accès direct, pour de
 - `setup.php`
 - `install.php`
 
-Les deux fichiers sont disponibles sur la branche `claude/code-audit-7zuYa`.
+Les deux fichiers sont disponibles sur la branche de base.
 
 **2. Ouvrir `setup.php` dans le navigateur**
 
@@ -72,7 +72,7 @@ L'installeur guide en 8 étapes :
 
 Pas besoin de réinstaller. Il suffit de :
 
-1. Télécharger `setup.php` (branche `claude/code-audit-7zuYa`) → Raw → sauvegarder
+1. Télécharger `setup.php` (branche de base) → Raw → sauvegarder
 2. Uploader `setup.php` à la racine du site
 3. Ouvrir `setup.php` dans le navigateur
 
